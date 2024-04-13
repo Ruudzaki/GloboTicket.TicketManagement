@@ -8,7 +8,7 @@ namespace GloboTicket.TicketManagement.Persistence;
 
 public static class PersistenceServiceRegistration
 {
-    public static IServiceCollection RegisterPersistenceServices(this IServiceCollection services,
+    public static IServiceCollection AddPersistenceServices(this IServiceCollection services,
         IConfiguration configuration)
     {
         services.AddDbContext<GloboTicketDbContext>(options =>
