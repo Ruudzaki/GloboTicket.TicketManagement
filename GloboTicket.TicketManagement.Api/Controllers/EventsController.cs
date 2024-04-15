@@ -69,6 +69,6 @@ public class EventsController : Controller
     {
         var fileDto = await _mediator.Send(new GetEventsExportQuery());
 
-        return File(fileDto.Data, fileDto.ContentType, fileDto.EventExportFileName);
+        return File(fileDto.Data ?? [], fileDto.ContentType, fileDto.EventExportFileName);
     }
 }
