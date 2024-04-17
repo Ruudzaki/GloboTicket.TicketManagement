@@ -2,6 +2,7 @@
 using GloboTicket.TicketManagement.Application.Features.Categories.Queries.GetCategoriesList;
 using GloboTicket.TicketManagement.Application.Features.Categories.Queries.GetCategoriesListWithEvents;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GloboTicket.TicketManagement.Api.Controllers;
@@ -19,6 +20,7 @@ public class CategoryController : ControllerBase
 
     [HttpGet("all", Name = "GetAllCategories")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [Authorize]
     public async Task<ActionResult<List<CategoryListVm>>> GetAllCategories()
     {
         var dtos = await _mediator.Send(new GetCategoriesListQuery());
@@ -28,10 +30,10 @@ public class CategoryController : ControllerBase
     [HttpGet("allwithevents", Name = "GetCategoriesWithEvents")]
     [ProducesDefaultResponseType]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [Authorize]
     public async Task<ActionResult<List<CategoryEventListVm>>> GetCategoriesWithEvents(bool includeHistory)
     {
-        var getCategoriesListWithEventsQuery = new GetCategoriesListWithEventsQuery
-            { IncludeHistory = includeHistory };
+        var getCategoriesListWithEventsQuery = new GetCategoriesListWithEventsQuery { IncludeHistory = includeHistory };
 
         var dtos = await _mediator.Send(getCategoriesListWithEventsQuery);
         return Ok(dtos);

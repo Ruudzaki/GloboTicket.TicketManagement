@@ -20,7 +20,6 @@
   <ItemGroup>
     <Folder Include="Features\Events\Commands\CreateEvent\" />
     <Folder Include="Features\Orders\Commands\" />
-    <Folder Include="Features\Orders\Queries\" />
     <Folder Include="Models\Mail\" />
   </ItemGroup>
 

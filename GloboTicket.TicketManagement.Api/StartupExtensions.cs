@@ -1,21 +1,29 @@
-﻿using GloboTicket.TicketManagement.Api.Services;
+﻿using System.Security.Claims;
+using GloboTicket.TicketManagement.Api.Middleware;
+using GloboTicket.TicketManagement.Api.Services;
 using GloboTicket.TicketManagement.Application;
 using GloboTicket.TicketManagement.Application.Contracts;
+using GloboTicket.TicketManagement.Identity;
+using GloboTicket.TicketManagement.Identity.Models;
 using GloboTicket.TicketManagement.Infrastructure;
 using GloboTicket.TicketManagement.Persistence;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace GloboTicket.TicketManagement.Api;
 
 public static class StartupExtensions
 {
-    public static WebApplication ConfigureServices(this WebApplicationBuilder builder)
+    public static WebApplication ConfigureServices(
+        this WebApplicationBuilder builder)
     {
         builder.Services.AddApplicationServices();
         builder.Services.AddInfrastructureServices(builder.Configuration);
         builder.Services.AddPersistenceServices(builder.Configuration);
+        builder.Services.AddIdentityServices(builder.Configuration);
 
         builder.Services.AddScoped<ILoggedInUserService, LoggedInUserService>();
+
         builder.Services.AddHttpContextAccessor();
 
         builder.Services.AddControllers();
@@ -24,7 +32,7 @@ public static class StartupExtensions
             options => options.AddPolicy(
                 "open",
                 policy => policy.WithOrigins([
-                        builder.Configuration["ApiUrl"] ?? "https://localhost:7020",
+                        builder.Configuration["ApiUrl"] ?? "https://localhost:7081",
                         builder.Configuration["BlazorUrl"] ?? "https://localhost:7080"
                     ])
                     .AllowAnyMethod()
@@ -32,6 +40,7 @@ public static class StartupExtensions
                     .AllowAnyHeader()
                     .AllowCredentials()));
 
+        builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
 
         return builder.Build();
@@ -39,6 +48,14 @@ public static class StartupExtensions
 
     public static WebApplication ConfigurePipeline(this WebApplication app)
     {
+        app.MapIdentityApi<ApplicationUser>();
+
+        app.MapPost("/Logout", async (ClaimsPrincipal user, SignInManager<ApplicationUser> signInManager) =>
+        {
+            await signInManager.SignOutAsync();
+            return TypedResults.Ok();
+        });
+
         app.UseCors("open");
 
         if (app.Environment.IsDevelopment())
@@ -46,6 +63,8 @@ public static class StartupExtensions
             app.UseSwagger();
             app.UseSwaggerUI();
         }
+
+        app.UseCustomExceptionHandler();
 
         app.UseHttpsRedirection();
         app.MapControllers();
@@ -58,16 +77,16 @@ public static class StartupExtensions
         using var scope = app.Services.CreateScope();
         try
         {
-            var content = scope.ServiceProvider.GetService<GloboTicketDbContext>();
-            if (content != null)
+            var context = scope.ServiceProvider.GetService<GloboTicketDbContext>();
+            if (context != null)
             {
-                await content.Database.EnsureDeletedAsync();
-                await content.Database.MigrateAsync();
+                await context.Database.EnsureDeletedAsync();
+                await context.Database.MigrateAsync();
             }
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            Console.WriteLine(e);
+            //add logging here later on
         }
     }
 }
