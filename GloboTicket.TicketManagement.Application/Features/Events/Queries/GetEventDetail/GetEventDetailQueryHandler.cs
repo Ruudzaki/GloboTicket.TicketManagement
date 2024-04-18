@@ -11,12 +11,14 @@ public class GetEventDetailQueryHandler : IRequestHandler<GetEventDetailQuery, E
     private readonly IAsyncRepository<Event> _eventRepository;
     private readonly IMapper _mapper;
 
-    public GetEventDetailQueryHandler(IAsyncRepository<Event> eventRepository,
-        IAsyncRepository<Category> categoryRepository, IMapper mapper)
+    public GetEventDetailQueryHandler(
+        IMapper mapper,
+        IAsyncRepository<Event> eventRepository,
+        IAsyncRepository<Category> categoryRepository)
     {
+        _mapper = mapper;
         _eventRepository = eventRepository;
         _categoryRepository = categoryRepository;
-        _mapper = mapper;
     }
 
     public async Task<EventDetailVm> Handle(GetEventDetailQuery request, CancellationToken cancellationToken)

@@ -10,6 +10,7 @@ public class CreateEventCommandValidator : AbstractValidator<CreateEventCommand>
     public CreateEventCommandValidator(IEventRepository eventRepository)
     {
         _eventRepository = eventRepository;
+
         RuleFor(p => p.Name)
             .NotEmpty().WithMessage("{PropertyName} is required.")
             .NotNull()
